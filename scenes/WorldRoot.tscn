@@ -1,0 +1,7 @@
+WorldRoot (Node2D)
+├── WorldGenerator (Node)
+├── ChunkContainer (Node2D)
+├── EncounterContainer (Node2D)
+├── ResourceContainer (Node2D)
+├── BossContainer (Node2D)
+└── Player (CharacterBody2D)

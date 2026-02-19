@@ -6,6 +6,7 @@ const GameConstants = preload("res://scripts/GameConstants.gd")
 @export var speed := 120.0
 @export var health := 100
 @export var max_health := 100
+@export var base_damage := 8
 
 # 战斗状态
 enum State {
@@ -85,9 +86,8 @@ func _on_parry_end():
 func start_attack():
 	if current_state == State.ATTACK: return
 	current_state = State.ATTACK
-	print("Combat: Attacking with Attribute: ", GameConstants.Attribute.keys()[weapon_attribute])
-	# 简单攻击后摇
-	await get_tree().create_timer(0.4).timeout
+	_spawn_melee_hitbox()
+	await get_tree().create_timer(0.3).timeout
 	current_state = State.IDLE
 
 # 核心机制：精准格挡判定
@@ -128,3 +128,23 @@ func _on_buff_timeout():
 func die():
 	print("Player Died")
 	queue_free()
+
+func _spawn_melee_hitbox():
+	var hb := Area2D.new()
+	var cs := CollisionShape2D.new()
+	var rect := RectangleShape2D.new()
+	rect.size = Vector2(24, 12)
+	cs.shape = rect
+	hb.add_child(cs)
+	hb.position = position + Vector2(20, 0)
+	hb.body_entered.connect(func(body):
+		if body.has_method("receive_melee_hit") and body != self:
+			body.receive_melee_hit(base_damage, weapon_attribute)
+	)
+	var t := Timer.new()
+	t.one_shot = true
+	t.wait_time = 0.1
+	t.timeout.connect(hb.queue_free)
+	hb.add_child(t)
+	get_parent().add_child(hb)
+	t.start()

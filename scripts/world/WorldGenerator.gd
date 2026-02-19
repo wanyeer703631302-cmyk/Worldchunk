@@ -6,6 +6,7 @@ extends Node
 @export var chunk_count := Vector2i(3, 3)
 
 var rng := RandomNumberGenerator.new()
+var biome_data := load("res://data/biome_data.tres")
 
 func _ready():
 	rng.randomize()
@@ -32,4 +33,11 @@ func generate_chunks():
 				x * chunk_size.x,
 				y * chunk_size.y
 			)
+			var biomes := biome_data.get("biomes")
+			if biomes and biomes.size() > 0:
+				var b := biomes[rng.randi_range(0, biomes.size() - 1)]
+				var label := chunk.get_node("Label")
+				var rect := chunk.get_node("ColorRect")
+				label.text = b["name"]
+				rect.color = Color(0.1 + rng.randf() * 0.4, 0.1 + rng.randf() * 0.4, 0.1 + rng.randf() * 0.4, 1.0)
 			container.add_child(chunk)

@@ -33,11 +33,21 @@ func generate_chunks():
 				x * chunk_size.x,
 				y * chunk_size.y
 			)
-			var biomes := biome_data.get("biomes")
-			if biomes and biomes.size() > 0:
-				var b := biomes[rng.randi_range(0, biomes.size() - 1)]
-				var label := chunk.get_node("Label")
-				var rect := chunk.get_node("ColorRect")
-				label.text = b["name"]
-				rect.color = Color(0.1 + rng.randf() * 0.4, 0.1 + rng.randf() * 0.4, 0.1 + rng.randf() * 0.4, 1.0)
+			# Load Biome Data
+			var biomes = biome_data.get("biomes")
+			if biomes and biomes is Array and biomes.size() > 0:
+				var b: Dictionary = biomes[rng.randi_range(0, biomes.size() - 1)]
+				
+				var label: Label = chunk.get_node("Label")
+				var rect: ColorRect = chunk.get_node("ColorRect")
+				
+				if label: label.text = str(b.get("name", "Unknown"))
+				if rect: 
+					# Generate random variation based on base color
+					var base_color = Color(0.2, 0.6, 0.2) # Default green
+					if b.get("name") == "wetlands": base_color = Color(0.2, 0.2, 0.6)
+					elif b.get("name") == "forest": base_color = Color(0.1, 0.4, 0.1)
+					
+					rect.color = base_color.lightened(rng.randf() * 0.2)
+			
 			container.add_child(chunk)

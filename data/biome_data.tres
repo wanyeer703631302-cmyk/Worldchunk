@@ -1,0 +1,23 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+biomes = [
+	{
+		"name": "plains",
+		"enemy_bias": ["slime", "wolf"],
+		"resource_bias": ["herb", "water"],
+		"risk": 1
+	},
+	{
+		"name": "forest",
+		"enemy_bias": ["spider", "wolf"],
+		"resource_bias": ["wood", "herb"],
+		"risk": 2
+	},
+	{
+		"name": "wetlands",
+		"enemy_bias": ["slime", "electric_eel"],
+		"resource_bias": ["water", "mushroom"],
+		"risk": 2
+	}
+]

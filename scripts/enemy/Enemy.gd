@@ -9,15 +9,35 @@ const ProjectileScript = preload("res://scripts/Projectile.gd")
 @export var vulnerable_to := [GameConstants.Attribute.ICE]
 
 @onready var player: Node2D = get_tree().get_root().find_child("Player", true, false)
+@onready var charge_indicator = $ChargeIndicator
+@onready var sprite = $Sprite2D
 
 func _ready():
 	var timer := Timer.new()
 	timer.wait_time = attack_interval
 	timer.autostart = true
-	timer.timeout.connect(_attack)
+	timer.timeout.connect(_start_attack_sequence) # Changed to sequence
 	add_child(timer)
+	
+	# Set color based on attribute
+	sprite.modulate = GameConstants.ATTRIBUTE_COLORS.get(attack_attribute, Color.WHITE).darkened(0.2)
 
-func _attack():
+func _start_attack_sequence():
+	if not is_instance_valid(player): return
+	
+	# Telegraphing (蓄力预警)
+	charge_indicator.visible = true
+	var tween = create_tween()
+	tween.tween_property(charge_indicator, "scale", Vector2(1.5, 1.5), 0.5)
+	tween.tween_property(charge_indicator, "scale", Vector2(0.1, 0.1), 0.2)
+	
+	await tween.finished
+	charge_indicator.visible = false
+	charge_indicator.scale = Vector2(1, 1)
+	
+	_fire_projectile()
+
+func _fire_projectile():
 	if not is_instance_valid(player):
 		return
 		

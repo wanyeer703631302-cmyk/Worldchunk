@@ -13,6 +13,19 @@ script = ExtResource("1_script")
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_icon")
 
+[node name="WeaponPivot" type="Node2D" parent="."]
+
+[node name="WeaponVisual" type="Polygon2D" parent="WeaponPivot"]
+position = Vector2(25, 0)
+rotation = 1.5708
+color = Color(0.8, 0.8, 0.8, 1)
+polygon = PackedVector2Array(0, -15, 5, 0, 0, 15, -5, 0)
+
+[node name="ParryShield" type="Polygon2D" parent="."]
+visible = false
+color = Color(0.2, 1, 0.2, 0.3)
+polygon = PackedVector2Array(0, -40, 28, -28, 40, 0, 28, 28, 0, 40, -28, 28, -40, 0, -28, -28)
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_1")
 

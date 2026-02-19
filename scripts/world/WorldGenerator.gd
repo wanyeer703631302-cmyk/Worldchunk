@@ -49,5 +49,36 @@ func generate_chunks():
 					elif b.get("name") == "forest": base_color = Color(0.1, 0.4, 0.1)
 					
 					rect.color = base_color.lightened(rng.randf() * 0.2)
+					
+					# Add random obstacles (Scaffold)
+					_spawn_scaffold_obstacles(chunk, b.get("name"))
 			
 			container.add_child(chunk)
+
+func _spawn_scaffold_obstacles(chunk: Node2D, biome_name: String):
+	# Add simple walls or rocks
+	var count = rng.randi_range(3, 8)
+	for i in range(count):
+		var obstacle = StaticBody2D.new()
+		
+		# Visual
+		var color_rect = ColorRect.new()
+		color_rect.size = Vector2(32, 32)
+		color_rect.color = Color(0.3, 0.3, 0.3) # Stone gray
+		color_rect.position = Vector2(-16, -16) # Center pivot
+		obstacle.add_child(color_rect)
+		
+		# Collider
+		var shape = CollisionShape2D.new()
+		var rect_shape = RectangleShape2D.new()
+		rect_shape.size = Vector2(32, 32)
+		shape.shape = rect_shape
+		obstacle.add_child(shape)
+		
+		# Random Position in Chunk (avoid edges)
+		obstacle.position = Vector2(
+			rng.randf_range(32, 224),
+			rng.randf_range(32, 224)
+		)
+		
+		chunk.add_child(obstacle)

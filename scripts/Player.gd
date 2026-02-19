@@ -40,9 +40,13 @@ func _ready():
 	parry_timer.timeout.connect(_on_parry_end)
 	add_child(parry_timer)
 
+@onready var weapon_pivot = $WeaponPivot
+@onready var weapon_visual = $WeaponPivot/WeaponVisual
+@onready var parry_shield = $ParryShield
+
 func _physics_process(delta):
+	# 状态锁定
 	if current_state == State.ATTACK or current_state == State.PARRY:
-		# 攻击或格挡硬直中不能移动
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return
@@ -56,37 +60,71 @@ func _physics_process(delta):
 		current_state = State.MOVE
 		input = input.normalized()
 		velocity = input * speed
+		
+		# 武器跟随移动方向旋转
+		weapon_pivot.rotation = lerp_angle(weapon_pivot.rotation, input.angle(), 15 * delta)
 	else:
 		current_state = State.IDLE
 		velocity = Vector2.ZERO
 	
 	move_and_slide()
-	
-	# 处理输入
 	_handle_combat_input()
 
 func _handle_combat_input():
-	if Input.is_action_just_pressed("ui_accept"): # 假设 Space 为格挡
+	if Input.is_action_just_pressed("ui_accept"): # Space: Parry
 		start_parry()
-	elif Input.is_action_just_pressed("ui_select"): # 假设 Enter/Z 为攻击
+	elif Input.is_action_just_pressed("ui_select"): # Enter/Z: Attack
 		start_attack()
 
 func start_parry():
 	if current_state == State.PARRY: return
 	current_state = State.PARRY
-	print("Combat: Starting Parry Attempt!")
+	parry_shield.visible = true # 视觉反馈
+	modulate = Color(0.5, 1.0, 0.5) 
+	print("Combat: Parry Window OPEN (0.2s)")
 	parry_timer.start(parry_window)
-	# TODO: 播放格挡动画
 
 func _on_parry_end():
 	if current_state == State.PARRY:
 		current_state = State.IDLE
-		print("Combat: Parry Window Closed (Missed)")
+		parry_shield.visible = false
+		modulate = Color.WHITE
+		print("Combat: Parry Failed (Missed)")
 
 func start_attack():
 	if current_state == State.ATTACK: return
 	current_state = State.ATTACK
-	_spawn_melee_hitbox()
+	var attr_name = GameConstants.Attribute.keys()[weapon_attribute]
+	print("Combat: Attack! Attribute: ", attr_name)
+	
+	# 攻击动作：武器向前突刺
+	var original_pos = weapon_visual.position
+	var tween = create_tween()
+	tween.tween_property(weapon_visual, "position", Vector2(40, 0), 0.1)
+	tween.tween_property(weapon_visual, "position", original_pos, 0.2)
+	
+	# 生成攻击判定
+	var hitbox = Area2D.new()
+	var shape = CollisionShape2D.new()
+	var rect = RectangleShape2D.new()
+	rect.size = Vector2(40, 40)
+	shape.shape = rect
+	hitbox.add_child(shape)
+	
+	# 将 hitbox 添加到 WeaponPivot 下，随方向旋转
+	weapon_pivot.add_child(hitbox)
+	hitbox.position = Vector2(40, 0)
+	
+	# 检查碰撞
+	await get_tree().physics_frame
+	await get_tree().physics_frame # 等待物理帧更新
+	
+	for body in hitbox.get_overlapping_bodies():
+		if body.has_method("receive_melee_hit") and body != self:
+			body.receive_melee_hit(10, weapon_attribute)
+	
+	hitbox.queue_free()
+	
 	await get_tree().create_timer(0.3).timeout
 	current_state = State.IDLE
 
@@ -97,7 +135,9 @@ func take_attribute_damage(amount: int, incoming_attr: int):
 		print("Combat: >>> PERFECT PARRY! <<< Absorbed: ", GameConstants.Attribute.keys()[incoming_attr])
 		_apply_weapon_attribute(incoming_attr)
 		current_state = State.IDLE
+		parry_shield.visible = false
 		parry_timer.stop()
+		modulate = Color.WHITE # 恢复颜色
 		return
 	
 	# 判定失败
@@ -116,13 +156,18 @@ func _apply_weapon_attribute(new_attr: int):
 	weapon_attribute = new_attr
 	attribute_buff_timer.start(BUFF_DURATION)
 	
-	# 视觉反馈：武器充能颜色
-	modulate = GameConstants.ATTRIBUTE_COLORS.get(new_attr, Color.WHITE)
+	# 视觉反馈：武器变色
+	var color = GameConstants.ATTRIBUTE_COLORS.get(new_attr, Color.WHITE)
+	weapon_visual.color = color
+	parry_shield.color = color.lightened(0.5)
+	parry_shield.color.a = 0.5
+	
 	print("Combat: Weapon Empowered with ", GameConstants.Attribute.keys()[new_attr])
 
 func _on_buff_timeout():
 	weapon_attribute = GameConstants.Attribute.NONE
-	modulate = Color.WHITE
+	weapon_visual.color = Color(0.8, 0.8, 0.8, 1) # 恢复默认白/灰
+	parry_shield.color = Color(0.2, 1, 0.2, 0.3) # 恢复默认绿盾
 	print("Combat: Weapon Buff Faded")
 
 func die():

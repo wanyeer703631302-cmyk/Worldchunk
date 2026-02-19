@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/enemy/Enemy.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://icon.svg" id="2_tex"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HealthBar.tscn" id="3_healthbar"]
 
 [sub_resource type="CircleShape2D" id="shape"]
 radius = 12.0
@@ -12,6 +13,10 @@ script = ExtResource("1_script")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(0.4, 0.4)
 texture = ExtResource("2_tex")
+
+[node name="HealthBar" parent="." instance=ExtResource("3_healthbar")]
+offset_top = -40.0
+offset_bottom = -40.0
 
 [node name="ChargeIndicator" type="Polygon2D" parent="."]
 visible = false

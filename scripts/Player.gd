@@ -13,10 +13,18 @@ enum State {
 	IDLE,
 	MOVE,
 	ATTACK,
-	PARRY
+	PARRY,
+	DASH
 }
 
 var current_state = State.IDLE
+
+# 移动属性
+@export var speed := 120.0
+@export var dash_speed := 400.0
+@export var dash_duration := 0.2
+@export var dash_cooldown := 1.0
+var can_dash := true
 
 # 武器属性系统
 var weapon_attribute = GameConstants.Attribute.NONE
@@ -26,6 +34,13 @@ const BUFF_DURATION := 8.0 # 6-10秒
 # 格挡相关
 var parry_window := 0.2 # 0.2秒完美格挡窗口
 var parry_timer: Timer = null
+
+# HealthBar
+@onready var health_bar = $HealthBar
+
+@onready var weapon_pivot = $WeaponPivot
+@onready var weapon_visual = $WeaponPivot/WeaponVisual
+@onready var parry_shield = $ParryShield
 
 func _ready():
 	# 初始化 Buff 计时器
@@ -40,14 +55,18 @@ func _ready():
 	parry_timer.timeout.connect(_on_parry_end)
 	add_child(parry_timer)
 
-@onready var weapon_pivot = $WeaponPivot
-@onready var weapon_visual = $WeaponPivot/WeaponVisual
-@onready var parry_shield = $ParryShield
+	# 初始化 HealthBar
+	if health_bar:
+		health_bar.init_health(health, max_health)
 
 func _physics_process(delta):
 	# 状态锁定
 	if current_state == State.ATTACK or current_state == State.PARRY:
 		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+	
+	if current_state == State.DASH:
 		move_and_slide()
 		return
 
@@ -68,13 +87,39 @@ func _physics_process(delta):
 		velocity = Vector2.ZERO
 	
 	move_and_slide()
-	_handle_combat_input()
+	_handle_combat_input(input)
 
-func _handle_combat_input():
+func _handle_combat_input(input_dir: Vector2):
 	if Input.is_action_just_pressed("ui_accept"): # Space: Parry
 		start_parry()
 	elif Input.is_action_just_pressed("ui_select"): # Enter/Z: Attack
 		start_attack()
+	elif Input.is_action_just_pressed("ui_focus_next") and can_dash and input_dir.length() > 0: # Tab/Shift: Dash
+		start_dash(input_dir)
+
+func start_dash(dir: Vector2):
+	current_state = State.DASH
+	can_dash = false
+	velocity = dir * dash_speed
+	
+	# Visual feedback
+	var ghost = weapon_visual.duplicate()
+	get_parent().add_child(ghost)
+	ghost.global_position = weapon_visual.global_position
+	ghost.global_rotation = weapon_visual.global_rotation
+	ghost.modulate.a = 0.5
+	var tween = create_tween()
+	tween.tween_property(ghost, "modulate:a", 0.0, 0.2)
+	tween.tween_callback(ghost.queue_free)
+	
+	print("Combat: Dash!")
+	
+	await get_tree().create_timer(dash_duration).timeout
+	current_state = State.IDLE
+	velocity = Vector2.ZERO
+	
+	await get_tree().create_timer(dash_cooldown).timeout
+	can_dash = true
 
 func start_parry():
 	if current_state == State.PARRY: return
@@ -142,6 +187,10 @@ func take_attribute_damage(amount: int, incoming_attr: int):
 	
 	# 判定失败
 	health -= amount
+	if health_bar:
+		health_bar.update_health(health, max_health)
+		health_bar.show_damage(amount)
+		
 	modulate = Color.RED # 受伤反馈
 	var tween = create_tween()
 	tween.tween_property(self, "modulate", Color.WHITE, 0.2)

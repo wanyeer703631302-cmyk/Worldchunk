@@ -1,2 +1,16 @@
-TerrainChunk (Node2D)
-├── ColorRect
+[gd_scene format=3 uid="uid://c7k3y5r2x6a4"]
+
+[node name="TerrainChunk" type="Node2D"]
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_right = 256.0
+offset_bottom = 256.0
+color = Color(0.13, 0.13, 0.13, 1)
+
+[node name="Label" type="Label" parent="."]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 128.0
+offset_bottom = 31.0
+text = "Chunk"
+

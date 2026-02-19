@@ -1,2 +1,8 @@
-Main (Node)
-└── WorldRoot (Node2D)
+[gd_scene load_steps=2 format=3 uid="uid://e1m2x3p4r5t6"]
+
+[ext_resource type="PackedScene" uid="uid://d8f4x2z9c1a7" path="res://scenes/WorldRoot.tscn" id="1_world"]
+
+[node name="Main" type="Node"]
+
+[node name="WorldRoot" parent="." instance=ExtResource("1_world")]
+

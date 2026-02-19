@@ -1,3 +1,21 @@
-Player (CharacterBody2D)
-├── Sprite2D
-└── CollisionShape2D
+[gd_scene load_steps=4 format=3 uid="uid://b8j2x4q1y5z3"]
+
+[ext_resource type="Script" path="res://scripts/Player.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b5b5b5b5b5b5" path="res://icon.svg" id="2_icon"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 30.0
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(1.5, 1.5)
+

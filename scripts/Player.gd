@@ -31,7 +31,7 @@ var attribute_buff_timer: Timer = null
 const BUFF_DURATION := 8.0 # 6-10秒
 
 # 格挡相关
-var parry_window := 0.2 # 0.2秒完美格挡窗口
+var parry_window := 0.4 # 0.4秒完美格挡窗口
 var parry_timer: Timer = null
 
 # HealthBar
@@ -40,6 +40,9 @@ var parry_timer: Timer = null
 @onready var weapon_pivot = $WeaponPivot
 @onready var weapon_visual = $WeaponPivot/WeaponVisual
 @onready var parry_shield = $ParryShield
+
+# 状态标记
+var is_invincible := false
 
 func _ready():
 	# 初始化 Buff 计时器
@@ -178,6 +181,19 @@ func take_attribute_damage(amount: int, incoming_attr: int):
 		# 判定成功
 		print("Combat: >>> PERFECT PARRY! <<< Absorbed: ", GameConstants.Attribute.keys()[incoming_attr])
 		_apply_weapon_attribute(incoming_attr)
+		
+		# Visual Feedback: PARRY! Text
+		var label = Label.new()
+		label.text = "PARRY!"
+		label.modulate = Color.GREEN
+		label.position = Vector2(-20, -80)
+		label.scale = Vector2(1.5, 1.5)
+		get_parent().add_child(label)
+		label.global_position = global_position + Vector2(0, -60)
+		var t = create_tween()
+		t.tween_property(label, "position:y", label.position.y - 40, 0.5)
+		t.tween_callback(label.queue_free)
+
 		current_state = State.IDLE
 		parry_shield.visible = false
 		parry_timer.stop()
@@ -185,7 +201,11 @@ func take_attribute_damage(amount: int, incoming_attr: int):
 		return
 	
 	# 判定失败
+	if is_invincible: return
+	
 	health -= amount
+	is_invincible = true
+	
 	if health_bar:
 		health_bar.update_health(health, max_health)
 		health_bar.show_damage(amount)
@@ -193,6 +213,7 @@ func take_attribute_damage(amount: int, incoming_attr: int):
 	modulate = Color.RED # 受伤反馈
 	var tween = create_tween()
 	tween.tween_property(self, "modulate", Color.WHITE, 0.2)
+	tween.tween_callback(func(): is_invincible = false)
 	
 	print("Combat: Hit! Damage: ", amount, " Remaining HP: ", health)
 	if health <= 0:

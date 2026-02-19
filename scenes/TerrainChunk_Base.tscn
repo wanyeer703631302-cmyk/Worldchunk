@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://c7k3y5r2x6a4"]
+[gd_scene format=3]
 
 [node name="TerrainChunk" type="Node2D"]
 
@@ -13,4 +13,3 @@ offset_top = 8.0
 offset_right = 128.0
 offset_bottom = 31.0
 text = "Chunk"
-

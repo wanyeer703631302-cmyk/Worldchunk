@@ -90,35 +90,40 @@ func start_attack():
 	await get_tree().create_timer(0.4).timeout
 	current_state = State.IDLE
 
-# 受到攻击的核心逻辑
-func take_damage(amount: int, attack_attribute: int):
+# 核心机制：精准格挡判定
+func take_attribute_damage(amount: int, incoming_attr: int):
 	if current_state == State.PARRY:
-		# 判定成功：精准格挡！
-		print("Combat: PERFECT PARRY! Incoming: ", GameConstants.Attribute.keys()[attack_attribute])
-		_apply_weapon_attribute(attack_attribute)
-		# 格挡成功后立即恢复行动
+		# 判定成功
+		print("Combat: >>> PERFECT PARRY! <<< Absorbed: ", GameConstants.Attribute.keys()[incoming_attr])
+		_apply_weapon_attribute(incoming_attr)
 		current_state = State.IDLE
 		parry_timer.stop()
 		return
 	
-	# 受伤逻辑
+	# 判定失败
 	health -= amount
-	print("Combat: Took Damage! Health: ", health)
+	modulate = Color.RED # 受伤反馈
+	var tween = create_tween()
+	tween.tween_property(self, "modulate", Color.WHITE, 0.2)
+	
+	print("Combat: Hit! Damage: ", amount, " Remaining HP: ", health)
 	if health <= 0:
 		die()
 
-# 核心机制：格挡成功赋予武器属性
 func _apply_weapon_attribute(new_attr: int):
 	if new_attr == GameConstants.Attribute.NONE: return
 	
 	weapon_attribute = new_attr
 	attribute_buff_timer.start(BUFF_DURATION)
-	print("Combat: Weapon Imbued with ", GameConstants.Attribute.keys()[new_attr], " for ", BUFF_DURATION, "s")
-	# TODO: 更新武器视觉特效
+	
+	# 视觉反馈：武器充能颜色
+	modulate = GameConstants.ATTRIBUTE_COLORS.get(new_attr, Color.WHITE)
+	print("Combat: Weapon Empowered with ", GameConstants.Attribute.keys()[new_attr])
 
 func _on_buff_timeout():
 	weapon_attribute = GameConstants.Attribute.NONE
-	print("Combat: Weapon Attribute Buff Expired")
+	modulate = Color.WHITE
+	print("Combat: Weapon Buff Faded")
 
 func die():
 	print("Player Died")

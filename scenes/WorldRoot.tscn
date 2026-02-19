@@ -1,9 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://d8f4x2z9c1a7"]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/WorldRoot.gd" id="1_root"]
 [ext_resource type="Script" path="res://scripts/world/WorldGenerator.gd" id="2_gen"]
-[ext_resource type="PackedScene" uid="uid://b8j2x4q1y5z3" path="res://scenes/Player.tscn" id="3_player"]
-[ext_resource type="PackedScene" uid="uid://c7k3y5r2x6a4" path="res://scenes/TerrainChunk_Base.tscn" id="4_chunk"]
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/TerrainChunk_Base.tscn" id="4_chunk"]
 
 [node name="WorldRoot" type="Node2D"]
 script = ExtResource("1_root")
@@ -21,5 +21,4 @@ chunk_scene = ExtResource("4_chunk")
 [node name="BossContainer" type="Node2D" parent="."]
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
-position = Vector2(128, 128)
-
+position = Vector2(300, 300)

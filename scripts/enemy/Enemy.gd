@@ -102,10 +102,9 @@ func _fire_projectile():
 	proj.rotation = dir.angle()
 	
 	# Visual Color Override
-	var mesh = proj.get_node_or_null("MeshInstance2D")
+	var mesh = proj.get_node_or_null("Visual")
 	if mesh:
-		mesh.modulate = GameConstants.ATTRIBUTE_COLORS.get(attack_attribute, Color.WHITE)
-	
+		mesh.color = GameConstants.ATTRIBUTE_COLORS.get(attack_attribute, Color.WHITE)
 	get_parent().add_child(proj) # Add to container, not self
 
 func receive_melee_hit(damage: int, weapon_attr: int):

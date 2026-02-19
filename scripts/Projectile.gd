@@ -16,13 +16,10 @@ func _ready():
 	var timer = get_tree().create_timer(lifetime)
 	timer.timeout.connect(queue_free)
 	
-	# Setup visual if mesh exists and is empty (for manual instantiation cases)
-	var mesh_node = get_node_or_null("MeshInstance2D")
-	if mesh_node and not mesh_node.mesh:
-		var sphere = SphereMesh.new()
-		sphere.radius = 6
-		sphere.height = 12
-		mesh_node.mesh = sphere
+	# Setup visual if Polygon2D exists
+	var poly = get_node_or_null("Visual")
+	if poly:
+		poly.color = GameConstants.ATTRIBUTE_COLORS.get(attribute, Color.WHITE)
 
 func _physics_process(delta):
 	position += direction * speed * delta

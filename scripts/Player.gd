@@ -3,7 +3,6 @@ extends CharacterBody2D
 # 引用 GameConstants
 const GameConstants = preload("res://scripts/GameConstants.gd")
 
-@export var speed := 120.0
 @export var health := 100
 @export var max_health := 100
 @export var base_damage := 8

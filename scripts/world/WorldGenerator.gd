@@ -34,7 +34,10 @@ func generate_chunks():
 				y * chunk_size.y
 			)
 			# Load Biome Data
-			var biomes = biome_data.get("biomes")
+			var biomes = null
+			if biome_data:
+				biomes = biome_data.get("biomes")
+			
 			if biomes and biomes is Array and biomes.size() > 0:
 				var b: Dictionary = biomes[rng.randi_range(0, biomes.size() - 1)]
 				
@@ -52,6 +55,12 @@ func generate_chunks():
 					
 					# Add random obstacles (Scaffold)
 					_spawn_scaffold_obstacles(chunk, b.get("name"))
+			else:
+				# Fallback if biome data missing
+				var rect: ColorRect = chunk.get_node("ColorRect")
+				if rect:
+					rect.color = Color(0.2, 0.5, 0.2).lightened(rng.randf() * 0.1)
+				_spawn_scaffold_obstacles(chunk, "default")
 			
 			container.add_child(chunk)
 
